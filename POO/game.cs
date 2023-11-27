@@ -159,7 +159,8 @@ public class Game {
             while (!TakeTurn(Player1)) continue;
             DisplayBoard();
             while (!TakeTurn(Player2)) continue;
-            // TODO: Check for checks and checkmates
         }
     }
 }
+
+// TODO: Checkmate and stalemate + castling
