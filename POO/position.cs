@@ -24,5 +24,4 @@ public class Position {
     {
         return HashCode.Combine(x, y);
     }
-
 }
