@@ -163,7 +163,19 @@ public class Game {
             return false;
         return true;
     }
-    
+
+    private void CheckPromotions()
+    {
+        foreach (var piece in GetPieces(Player1, Board)) {
+            if (piece is Pawn && piece.Pos.y == 8)
+                Board[piece.Pos] = new Queen(Player1, piece.Pos);
+        }
+        foreach (var piece in GetPieces(Player2, Board)) {
+            if (piece is Pawn && piece.Pos.y == 1)
+                Board[piece.Pos] = new Queen(Player2, piece.Pos);
+        }
+    }
+
     private Dictionary<Position, Piece?> CreateVirtualBoard(Movement move) {
         var virtualBoard = new Dictionary<Position, Piece?>(Board);
         virtualBoard[move.NewPos] = virtualBoard[move.CurrentPos];
@@ -202,6 +214,7 @@ public class Game {
 
     private void Turn(Player player) {
         DisplayBoard();
+        CheckPromotions();
         CheckChecking(player);
         if (IsCheckmate(player)) {
             Over = true;
@@ -227,5 +240,3 @@ public class Game {
         }
     }
 }
-
-// TODO: pawn promotion
