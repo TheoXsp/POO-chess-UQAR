@@ -2,7 +2,7 @@
 
 public class Game {
     private Dictionary<Position, Piece?> Board { get; } = new();
-    private Stack<Movement> Movements { get; } = new();
+    private Queue<Movement> Movements { get; } = new();
     private bool Over { get; set; } = false;
     private Player Player1 { get; set; }
     private Player Player2 { get; set; }
@@ -115,7 +115,7 @@ public class Game {
         Board[parsedMovement.CurrentPos].Pos = parsedMovement.NewPos;
         Board[parsedMovement.NewPos] = Board[parsedMovement.CurrentPos];
         Board[parsedMovement.CurrentPos] = null;
-        Movements.Push(parsedMovement);
+        Movements.Enqueue(parsedMovement);
         return true;
     }
     
@@ -238,5 +238,15 @@ public class Game {
                 break;
             Turn(Player2);
         }
+        Console.Write("Type 'y' to save the movements history to a file: ");
+        if (Console.ReadLine() == "y")
+            WriteMovementsToFile();
+    }
+
+    private void WriteMovementsToFile() {
+        var file = new StreamWriter("movements.txt");
+        foreach (var movement in Movements)
+            file.WriteLine($"{movement.Player.Name}: {movement.CurrentPos}->{movement.NewPos}");
+        file.Close();
     }
 }
