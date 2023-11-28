@@ -82,7 +82,6 @@ public class Game {
     }
 
     private bool TakeTurn(Player player) {
-        CheckChecking();
         Console.WriteLine($"{player.Name}'s turn: ");
         var movement = Console.ReadLine();
         if (movement == null || !IsStringValid(movement)) {
@@ -109,6 +108,10 @@ public class Game {
             Console.WriteLine("Invalid movement, this piece can't do that");
             return false;
         }
+        if (IsCheckSimulate(player, parsedMovement)) {
+            Console.WriteLine("Invalid movement, you can't put yourself in check");
+            return false;
+        }
         Board[parsedMovement.CurrentPos].Pos = parsedMovement.NewPos;
         Board[parsedMovement.NewPos] = Board[parsedMovement.CurrentPos];
         Board[parsedMovement.CurrentPos] = null;
@@ -116,7 +119,7 @@ public class Game {
         return true;
     }
     
-    private List<Piece> GetPieces(Player player) {
+    private List<Piece> GetPieces(Player player, Dictionary<Position, Piece?> board) {
         var pieces = new List<Piece>();
         for (var x = 'a'; x <= 'h'; x++) {
             for (var y = 1; y <= 8; y++) {
@@ -130,37 +133,97 @@ public class Game {
         return pieces;
     }
 
-    private void CheckChecking()
-    {
-        var player1Pieces = GetPieces(Player1);
-        var player2Pieces = GetPieces(Player2);
-        var player1King = player1Pieces.Find(piece => piece is King);
-        var player2King = player2Pieces.Find(piece => piece is King);
+    private List<Movement> GetLegalMoves(Player player) {
+        var legalMoves = new List<Movement>();
         
-        foreach (var piece in player1Pieces) {
-            if (piece.CanMove(player2King.Pos, Board)) {
-                Console.WriteLine($"{Player2.Name}'s king is check.");
-                Player2.IsCheck = true;
+        foreach (var piece in GetPieces(player, Board)) {
+            for (var x = 'a'; x <= 'h'; x++) {
+                for (var y = 1; y <= 8; y++) {
+                    var movement = new Movement(player, piece.Pos, new Position(x, y));
+                    if (piece.CanMove(movement.NewPos, Board) && !IsCheckSimulate(player, movement))
+                        legalMoves.Add(movement);
+                }
+            }
+        }
+        return legalMoves;
+    }
+
+    private bool IsCheckmate(Player player) {
+        if (!player.IsCheck)
+            return false;
+        if (GetLegalMoves(player).Count > 0)
+            return false;
+        return true;
+    }
+    
+    private bool IsStalemate(Player player) {
+        if (player.IsCheck)
+            return false;
+        if (GetLegalMoves(player).Count > 0)
+            return false;
+        return true;
+    }
+    
+    private Dictionary<Position, Piece?> CreateVirtualBoard(Movement move) {
+        var virtualBoard = new Dictionary<Position, Piece?>(Board);
+        virtualBoard[move.NewPos] = virtualBoard[move.CurrentPos];
+        virtualBoard[move.CurrentPos] = null;
+        return virtualBoard;
+    }
+
+    private bool IsCheckSimulate(Player player, Movement move) {
+        var virtualBoard = CreateVirtualBoard(move);
+        var oppPieces = (player == Player1) ? GetPieces(Player2, virtualBoard) : GetPieces(Player1, virtualBoard);
+        var playerPieces = (player == Player1) ? GetPieces(Player1, virtualBoard) : GetPieces(Player2, virtualBoard);
+        var playerKing = playerPieces.Find(piece => piece is King);
+        
+        foreach (var piece in oppPieces) {
+            if (piece.CanMove(playerKing.Pos, Board))
+                return true;
+        }
+        return false;
+    }
+    
+    private void CheckChecking(Player player)
+    {
+        var oppPieces = (player == Player1) ? GetPieces(Player2, Board) : GetPieces(Player1, Board);
+        var playerPieces = (player == Player1) ? GetPieces(Player1, Board) : GetPieces(Player2, Board);
+        var playerKing = playerPieces.Find(piece => piece is King);
+        
+        foreach (var piece in oppPieces) {
+            if (piece.CanMove(playerKing.Pos, Board)) {
+                Console.WriteLine($"{player.Name}'s king is check.");
+                player.IsCheck = true;
                 return;
             }
         }
-        foreach (var piece in player2Pieces) {
-            if (piece.CanMove(player1King.Pos, Board)) {
-                Console.WriteLine($"{Player1.Name}'s king is check.");
-                Player1.IsCheck = true;
-                return;
-            }
+        player.IsCheck = false;
+    }
+
+    private void Turn(Player player) {
+        DisplayBoard();
+        CheckChecking(player);
+        if (IsCheckmate(player)) {
+            Over = true;
+            Console.WriteLine(player == Player1
+                ? $"Checkmate. {Player2.Name} wins!"
+                : $"Checkmate. {Player1.Name} wins!");
+            return;
         }
+        if (IsStalemate(player)) {
+            Over = true;
+            Console.WriteLine("Stalemate.");
+            return;
+        }
+        while (!TakeTurn(player)) continue;
     }
 
     public void Run() {
         while (!Over) {
-            DisplayBoard();
-            while (!TakeTurn(Player1)) continue;
-            DisplayBoard();
-            while (!TakeTurn(Player2)) continue;
+            Turn(Player1);
+            if (Over)
+                break;
+            Turn(Player2);
         }
     }
 }
-
-// TODO: Checkmate and stalemate + castling

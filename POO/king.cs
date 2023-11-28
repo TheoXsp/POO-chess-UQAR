@@ -10,7 +10,6 @@ public class King : Piece {
     public override bool CanMove(Position position, Dictionary<Position, Piece?> board) {
         if (Math.Abs(position.x - this.Pos.x) > 1 || Math.Abs(position.y - this.Pos.y) > 1)
             return false;
-        this.Pos = position;
         return true;
     }
 }

@@ -13,6 +13,9 @@ public class Queen : Piece {
             var yCurrent = Pos.y + yDirection;
             
             while (xCurrent != target.x && yCurrent != target.y) {
+                if (xCurrent < 'a' || xCurrent > 'h' || yCurrent < 1 || yCurrent > 8) {
+                    return false;
+                }
                 if (board[new Position(xCurrent, yCurrent)] != null)
                     return false;
 
