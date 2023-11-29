@@ -24,10 +24,16 @@ public class Bishop : Piece {
     }
 
     public override bool CanMove(Position target, Dictionary<Position, Piece?> board) {
+        if (board[target] != null && board[target]?.Owner == this.Owner)
+            return false;
         if (!IsAccessible(target, board))
             return false;
         if (Math.Abs(target.x - this.Pos.x) != Math.Abs(target.y - this.Pos.y))
             return false;
         return true;
+    }
+    
+    public override Piece Copy() {
+        return new Bishop(this.Owner, this.Pos);
     }
 }

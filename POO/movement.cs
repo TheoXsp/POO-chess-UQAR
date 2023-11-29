@@ -10,4 +10,8 @@ public class Movement {
         this.CurrentPos = currentPos;
         this.NewPos = newPos;
     }
+    
+    public override string ToString() {
+        return $"{Player.Name}: {CurrentPos}->{NewPos}";
+    }
 }

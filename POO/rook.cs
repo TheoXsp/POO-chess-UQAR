@@ -24,10 +24,16 @@ public class Rook : Piece {
     }
 
     public override bool CanMove(Position target, Dictionary<Position, Piece?> board) {
+        if (board[target] != null && board[target]?.Owner == this.Owner)
+            return false;
         if (!IsAccessible(target, board))
             return false;
         if (target.x != Pos.x && target.y != Pos.y)
             return false;
         return true;
+    }
+
+    public override Piece Copy() {
+        return new Rook(this.Owner, this.Pos);
     }
 }

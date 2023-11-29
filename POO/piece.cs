@@ -17,4 +17,5 @@ public abstract class Piece {
 
     protected abstract bool IsAccessible(Position target, Dictionary<Position, Piece?> board);
     public abstract bool CanMove(Position target, Dictionary<Position, Piece?> board);
+    public abstract Piece Copy();
 }

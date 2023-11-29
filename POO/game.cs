@@ -123,7 +123,7 @@ public class Game {
         var pieces = new List<Piece>();
         for (var x = 'a'; x <= 'h'; x++) {
             for (var y = 1; y <= 8; y++) {
-                var piece = Board[new Position(x, y)];
+                var piece = board[new Position(x, y)];
                 if (piece == null)
                     continue;
                 if (piece.Owner == player)
@@ -178,6 +178,9 @@ public class Game {
 
     private Dictionary<Position, Piece?> CreateVirtualBoard(Movement move) {
         var virtualBoard = new Dictionary<Position, Piece?>(Board);
+        foreach (var piece in Board)
+            virtualBoard[piece.Key] = piece.Value?.Copy();
+        virtualBoard[move.CurrentPos].Pos = move.NewPos;
         virtualBoard[move.NewPos] = virtualBoard[move.CurrentPos];
         virtualBoard[move.CurrentPos] = null;
         return virtualBoard;
@@ -190,7 +193,7 @@ public class Game {
         var playerKing = playerPieces.Find(piece => piece is King);
         
         foreach (var piece in oppPieces) {
-            if (piece.CanMove(playerKing.Pos, Board))
+            if (piece.CanMove(playerKing.Pos, virtualBoard))
                 return true;
         }
         return false;
@@ -246,7 +249,7 @@ public class Game {
     private void WriteMovementsToFile() {
         var file = new StreamWriter("movements.txt");
         foreach (var movement in Movements)
-            file.WriteLine($"{movement.Player.Name}: {movement.CurrentPos}->{movement.NewPos}");
+            file.WriteLine(movement);
         file.Close();
     }
 }

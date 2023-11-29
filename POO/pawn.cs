@@ -8,22 +8,28 @@ public class Pawn : Piece {
     }
     
     public override bool CanMove(Position target, Dictionary<Position, Piece?> board) {
+        if (board[target] != null && board[target]?.Owner == this.Owner)
+            return false;
         if (Owner.IsWhite) {
-            if (target.y == this.Pos.y + 1)
+            if (target.x == this.Pos.x && target.y == this.Pos.y + 2 && this.Pos.y == 2 && board[target] == null)
                 return true;
-            if (target.y == this.Pos.y + 2 && this.Pos.y == 2)
+            if (target.x == this.Pos.x && target.y == this.Pos.y + 1 && board[target] == null)
                 return true;
             if (target.y == this.Pos.y + 1 && Math.Abs(target.x - this.Pos.x) == 1)
                 return board[target] != null && board[target]?.Owner != this.Owner;
         }
         else {
-            if (target.y == this.Pos.y - 1)
+            if (target.x == this.Pos.x && target.y == this.Pos.y - 2 && this.Pos.y == 7 && board[target] == null)
                 return true;
-            if (target.y == this.Pos.y - 2 && this.Pos.y == 7)
+            if (target.x == this.Pos.x && target.y == this.Pos.y - 1 && board[target] == null)
                 return true;
             if (target.y == this.Pos.y - 1 && Math.Abs(target.x - this.Pos.x) == 1)
                 return board[target] != null && board[target]?.Owner != this.Owner;
         }
         return false;
+    }
+    
+    public override Piece Copy() {
+        return new Pawn(this.Owner, this.Pos);
     }
 }
